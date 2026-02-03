@@ -4,4 +4,5 @@ export type RootStackParamList = {
   Main: undefined;
   Difficulty: undefined;
   Game: { difficulty?: Difficulty; resume?: boolean };
+  History: undefined;
 };

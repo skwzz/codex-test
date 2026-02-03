@@ -252,6 +252,15 @@ export default function GameScreen() {
     return computeConflicts(game.entries);
   }, [game]);
 
+  const numberCounts = useMemo(() => {
+    if (!game) return Array.from({ length: SIZE }, () => 0);
+    const counts = Array.from({ length: SIZE }, () => 0);
+    game.entries.forEach((value) => {
+      if (value >= 1 && value <= 9) counts[value - 1] += 1;
+    });
+    return counts;
+  }, [game]);
+
   const updateGame = (nextGame: SudokuGameState) => {
     setGame(nextGame);
     const payload = {
@@ -398,6 +407,7 @@ export default function GameScreen() {
           onUndo={handleUndo}
           onRedo={handleRedo}
           onCheck={handleCheck}
+          numberCounts={numberCounts}
           noteMode={noteMode}
           undoDisabled={game.undoStack.length === 0}
           redoDisabled={game.redoStack.length === 0}

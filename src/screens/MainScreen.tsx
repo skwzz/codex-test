@@ -44,6 +44,12 @@ export default function MainScreen() {
         >
           <Text style={styles.secondaryText}>Continue</Text>
         </Pressable>
+        <Pressable
+          style={styles.secondaryButton}
+          onPress={() => navigation.navigate('History')}
+        >
+          <Text style={styles.secondaryText}>History</Text>
+        </Pressable>
       </View>
       <Text style={styles.footer}>^^</Text>
     </View>

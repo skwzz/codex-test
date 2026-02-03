@@ -45,7 +45,7 @@ export default function MainScreen() {
           <Text style={styles.secondaryText}>Continue</Text>
         </Pressable>
       </View>
-      <Text style={styles.footer}>Inspired by Andoku 3</Text>
+      <Text style={styles.footer}>^^</Text>
     </View>
   );
 }
@@ -53,63 +53,77 @@ export default function MainScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f3efe9',
+    backgroundColor: '#FFF5F7',
     padding: 24,
     justifyContent: 'space-between',
   },
   hero: {
-    paddingTop: 40,
+    paddingTop: 60,
+    alignItems: 'center',
   },
   title: {
-    fontSize: 42,
-    fontWeight: '800',
-    color: '#1f2a44',
+    fontSize: 48,
+    fontWeight: '900',
+    color: '#F48FB1',
+    letterSpacing: -1,
+    textShadowColor: 'rgba(244, 143, 177, 0.3)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 4,
   },
   subtitle: {
     marginTop: 8,
-    fontSize: 16,
-    color: '#5c5c5c',
+    fontSize: 18,
+    color: '#8D6E63',
+    fontWeight: '600',
   },
   card: {
-    padding: 20,
-    backgroundColor: '#fffaf4',
-    borderRadius: 16,
-    gap: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
+    padding: 24,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    gap: 16,
+    shadowColor: '#F48FB1',
+    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 8 },
     shadowRadius: 16,
-    elevation: 3,
+    elevation: 4,
   },
   primaryButton: {
-    backgroundColor: '#1f2a44',
-    paddingVertical: 14,
-    borderRadius: 12,
+    backgroundColor: '#81D4FA',
+    paddingVertical: 16,
+    borderRadius: 30,
     alignItems: 'center',
+    shadowColor: '#81D4FA',
+    shadowOpacity: 0.4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 4,
   },
   primaryText: {
-    color: '#f6f5f3',
-    fontSize: 18,
-    fontWeight: '700',
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '800',
   },
   secondaryButton: {
-    borderWidth: 1,
-    borderColor: '#1f2a44',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#81D4FA',
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 30,
     alignItems: 'center',
   },
   secondaryText: {
-    color: '#1f2a44',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#81D4FA',
+    fontSize: 18,
+    fontWeight: '700',
   },
   disabledButton: {
-    opacity: 0.4,
+    opacity: 0.5,
+    borderColor: '#CFD8DC',
   },
   footer: {
     textAlign: 'center',
-    color: '#8b867f',
+    color: '#BCAAA4',
     paddingBottom: 12,
+    fontWeight: '500',
   },
 });

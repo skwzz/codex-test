@@ -112,8 +112,10 @@ export default function SudokuGrid({
 const styles = StyleSheet.create({
   grid: {
     borderWidth: 2,
-    borderColor: '#2b2b2b',
-    backgroundColor: '#f6f5f3',
+    borderColor: '#F48FB1',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    overflow: 'hidden',
   },
   row: {
     flexDirection: 'row',
@@ -122,46 +124,46 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 0.5,
-    borderColor: '#b8b5af',
-    backgroundColor: '#faf9f7',
+    borderColor: '#F8BBD0',
+    backgroundColor: '#FFFFFF',
   },
   cellBorderTop: {
     borderTopWidth: 2,
-    borderTopColor: '#2b2b2b',
+    borderTopColor: '#F48FB1',
   },
   cellBorderLeft: {
     borderLeftWidth: 2,
-    borderLeftColor: '#2b2b2b',
+    borderLeftColor: '#F48FB1',
   },
   cellBorderBottom: {
     borderBottomWidth: 2,
-    borderBottomColor: '#2b2b2b',
+    borderBottomColor: '#F48FB1',
   },
   cellBorderRight: {
     borderRightWidth: 2,
-    borderRightColor: '#2b2b2b',
+    borderRightColor: '#F48FB1',
   },
   cellSelected: {
-    backgroundColor: '#cfe2ff',
+    backgroundColor: '#E1BEE7',
   },
   cellRelated: {
-    backgroundColor: '#e9f0ff',
+    backgroundColor: '#F3E5F5',
   },
   cellSameValue: {
-    backgroundColor: '#f1e6ff',
+    backgroundColor: '#FFF59D',
   },
   cellGiven: {
-    backgroundColor: '#efedeb',
+    backgroundColor: '#FFFDE7',
   },
   cellText: {
-    color: '#1f1f1f',
-    fontWeight: '600',
+    color: '#8E24AA',
+    fontWeight: '700',
   },
   cellTextGiven: {
-    color: '#1a1a1a',
+    color: '#5D4037',
   },
   cellTextError: {
-    color: '#c62828',
+    color: '#FF8A80',
   },
   notesGrid: {
     width: '100%',
@@ -176,7 +178,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   noteText: {
-    color: '#6b6b6b',
-    fontWeight: '500',
+    color: '#9FA8DA',
+    fontWeight: '600',
   },
 });

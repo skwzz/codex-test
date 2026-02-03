@@ -5,6 +5,7 @@ type Props = {
   onErase: () => void;
   onToggleNotes: () => void;
   onHint: () => void;
+  onCheck: () => void;
   hintsLeft: number;
   hintDisabled: boolean;
   onUndo: () => void;
@@ -21,6 +22,7 @@ export default function NumberPad({
   onErase,
   onToggleNotes,
   onHint,
+  onCheck,
   hintsLeft,
   hintDisabled,
   onUndo,
@@ -72,6 +74,9 @@ export default function NumberPad({
           disabled={redoDisabled}
         >
           <Text style={styles.actionText}>Redo</Text>
+        </Pressable>
+        <Pressable onPress={onCheck} style={styles.actionButton}>
+          <Text style={styles.actionText}>Check</Text>
         </Pressable>
       </View>
     </View>

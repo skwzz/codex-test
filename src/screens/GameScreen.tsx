@@ -24,6 +24,7 @@ import type { RootStackParamList } from '../types/navigation';
 import type { Difficulty } from '../lib/sudoku';
 
 const SIZE = 9;
+const BOX = 3;
 
 const createEmptyNotes = () => Array.from({ length: SIZE * SIZE }, () => '');
 
@@ -45,11 +46,63 @@ const createNewGame = (difficulty: Difficulty): SudokuGameState => {
   };
 };
 
-const computeErrors = (entries: number[], solution: number[]) =>
-  entries.map((value, idx) => value !== 0 && value !== solution[idx]);
-
 const isSolved = (entries: number[], solution: number[]) =>
   entries.every((value, idx) => value !== 0 && value === solution[idx]);
+
+const computeConflicts = (entries: number[]) => {
+  const conflicts = Array.from({ length: SIZE * SIZE }, () => false);
+  const markGroup = (indices: number[]) => {
+    const seen: Record<number, number[]> = {};
+    for (const idx of indices) {
+      const value = entries[idx];
+      if (value === 0) continue;
+      if (!seen[value]) seen[value] = [];
+      seen[value].push(idx);
+    }
+    Object.values(seen).forEach((list) => {
+      if (list.length > 1) {
+        list.forEach((idx) => {
+          conflicts[idx] = true;
+        });
+      }
+    });
+  };
+
+  for (let r = 0; r < SIZE; r += 1) {
+    markGroup(Array.from({ length: SIZE }, (_, c) => r * SIZE + c));
+  }
+  for (let c = 0; c < SIZE; c += 1) {
+    markGroup(Array.from({ length: SIZE }, (_, r) => r * SIZE + c));
+  }
+  for (let br = 0; br < BOX; br += 1) {
+    for (let bc = 0; bc < BOX; bc += 1) {
+      const indices: number[] = [];
+      for (let r = 0; r < BOX; r += 1) {
+        for (let c = 0; c < BOX; c += 1) {
+          indices.push((br * BOX + r) * SIZE + (bc * BOX + c));
+        }
+      }
+      markGroup(indices);
+    }
+  }
+  return conflicts;
+};
+
+const evaluateProgress = (entries: number[], solution: number[]) => {
+  let hasWrong = false;
+  let hasEmpty = false;
+  for (let i = 0; i < entries.length; i += 1) {
+    const value = entries[i];
+    if (value === 0) {
+      hasEmpty = true;
+    } else if (value !== solution[i]) {
+      hasWrong = true;
+    }
+  }
+  if (hasWrong) return '오답이 포함되어 있어요.';
+  if (hasEmpty) return '현재까지는 맞아요. 아직 빈 칸이 있어요.';
+  return '현재까지 전부 정답이에요!';
+};
 
 const toggleNote = (notes: string, value: number) => {
   const set = new Set(notes.split('').filter(Boolean));
@@ -75,6 +128,8 @@ export default function GameScreen() {
   const [noteMode, setNoteMode] = useState(false);
   const [tick, setTick] = useState(0);
   const [showComplete, setShowComplete] = useState(false);
+  const [showCheck, setShowCheck] = useState(false);
+  const [checkMessage, setCheckMessage] = useState('');
 
   const sessionStartRef = useRef<number>(Date.now());
 
@@ -165,7 +220,7 @@ export default function GameScreen() {
 
   const errors = useMemo(() => {
     if (!game) return Array.from({ length: SIZE * SIZE }, () => false);
-    return computeErrors(game.entries, game.solution);
+    return computeConflicts(game.entries);
   }, [game]);
 
   const applyMove = (index: number, nextValue: number, nextNotes: string) => {
@@ -278,6 +333,12 @@ export default function GameScreen() {
     });
   };
 
+  const handleCheck = () => {
+    if (!game) return;
+    setCheckMessage(evaluateProgress(game.entries, game.solution));
+    setShowCheck(true);
+  };
+
   if (!game) {
     return (
       <View style={styles.container}>
@@ -321,6 +382,7 @@ export default function GameScreen() {
           hintDisabled={hintDisabled}
           onUndo={handleUndo}
           onRedo={handleRedo}
+          onCheck={handleCheck}
           noteMode={noteMode}
           undoDisabled={game.undoStack.length === 0}
           redoDisabled={game.redoStack.length === 0}
@@ -342,6 +404,21 @@ export default function GameScreen() {
               }}
             >
               <Text style={styles.modalButtonText}>Back to Home</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+
+      {showCheck && (
+        <View style={styles.overlay}>
+          <View style={styles.modal}>
+            <Text style={styles.modalTitle}>Check Result</Text>
+            <Text style={styles.modalText}>{checkMessage}</Text>
+            <Pressable
+              style={styles.modalButton}
+              onPress={() => setShowCheck(false)}
+            >
+              <Text style={styles.modalButtonText}>닫기</Text>
             </Pressable>
           </View>
         </View>

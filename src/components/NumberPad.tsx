@@ -6,6 +6,7 @@ type Props = {
   onToggleNotes: () => void;
   onHint: () => void;
   onCheck: () => void;
+  numberCounts: number[];
   hintsLeft: number;
   hintDisabled: boolean;
   onUndo: () => void;
@@ -23,6 +24,7 @@ export default function NumberPad({
   onToggleNotes,
   onHint,
   onCheck,
+  numberCounts,
   hintsLeft,
   hintDisabled,
   onUndo,
@@ -34,15 +36,18 @@ export default function NumberPad({
   return (
     <View style={styles.wrapper}>
       <View style={styles.numberRow}>
-        {numbers.map((value) => (
-          <Pressable
-            key={`num-${value}`}
-            onPress={() => onNumber(value)}
-            style={styles.numberButton}
-          >
-            <Text style={styles.numberText}>{value}</Text>
-          </Pressable>
-        ))}
+        {numbers.map((value) => {
+          const filled = numberCounts[value - 1] >= 9;
+          return (
+            <Pressable
+              key={`num-${value}`}
+              onPress={() => onNumber(value)}
+              style={[styles.numberButton, filled && styles.numberButtonFilled]}
+            >
+              <Text style={styles.numberText}>{value}</Text>
+            </Pressable>
+          );
+        })}
       </View>
       <View style={styles.actions}>
         <Pressable
@@ -105,6 +110,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 3,
+  },
+  numberButtonFilled: {
+    opacity: 0.45,
   },
   numberText: {
     color: '#FFFFFF',

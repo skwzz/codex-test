@@ -117,6 +117,39 @@ const toggleNote = (notes: string, value: number) => {
     .join('');
 };
 
+const applyMoveToGame = (
+  state: SudokuGameState,
+  index: number,
+  nextValue: number,
+  nextNotes: string
+) => {
+  if (state.given[index]) return null;
+  const prevValue = state.entries[index];
+  const prevNotes = state.notes[index];
+  if (prevValue === nextValue && prevNotes === nextNotes) return null;
+
+  const entries = state.entries.slice();
+  const notes = state.notes.slice();
+  entries[index] = nextValue;
+  notes[index] = nextNotes;
+
+  const move = {
+    index,
+    prevValue,
+    nextValue,
+    prevNotes,
+    nextNotes,
+  };
+
+  return {
+    ...state,
+    entries,
+    notes,
+    undoStack: [...state.undoStack, move],
+    redoStack: [],
+  };
+};
+
 export default function GameScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'Game'>>();
@@ -148,10 +181,12 @@ export default function GameScreen() {
           const now = Date.now();
           const added = Math.floor((now - sessionStartRef.current) / 1000);
           sessionStartRef.current = now;
-          return {
+          const updated = {
             ...prev,
             elapsedSec: prev.elapsedSec + added,
           };
+          saveCurrentGame(updated);
+          return updated;
         });
       } else if (nextAppState === 'active') {
         sessionStartRef.current = Date.now();
@@ -195,12 +230,6 @@ export default function GameScreen() {
 
   useEffect(() => {
     if (!game || game.completed) return;
-    const payload = { ...game, elapsedSec: currentElapsedSec };
-    saveCurrentGame(payload);
-  }, [game, currentElapsedSec]);
-
-  useEffect(() => {
-    if (!game || game.completed) return;
     if (isSolved(game.entries, game.solution)) {
       const completedAt = Date.now();
       const durationSec = currentElapsedSec;
@@ -223,33 +252,15 @@ export default function GameScreen() {
     return computeConflicts(game.entries);
   }, [game]);
 
-  const applyMove = (index: number, nextValue: number, nextNotes: string) => {
-    if (!game) return;
-    if (game.given[index]) return;
-    const prevValue = game.entries[index];
-    const prevNotes = game.notes[index];
-    if (prevValue === nextValue && prevNotes === nextNotes) return;
-
-    const entries = game.entries.slice();
-    const notes = game.notes.slice();
-    entries[index] = nextValue;
-    notes[index] = nextNotes;
-
-    const move = {
-      index,
-      prevValue,
-      nextValue,
-      prevNotes,
-      nextNotes,
+  const updateGame = (nextGame: SudokuGameState) => {
+    setGame(nextGame);
+    const payload = {
+      ...nextGame,
+      elapsedSec:
+        nextGame.elapsedSec +
+        Math.floor((Date.now() - sessionStartRef.current) / 1000),
     };
-
-    setGame({
-      ...game,
-      entries,
-      notes,
-      undoStack: [...game.undoStack, move],
-      redoStack: [],
-    });
+    saveCurrentGame(payload);
   };
 
   const handleNumber = (value: number) => {
@@ -257,20 +268,24 @@ export default function GameScreen() {
     if (noteMode) {
       if (game.entries[selectedIndex] !== 0) return;
       const nextNotes = toggleNote(game.notes[selectedIndex], value);
-      applyMove(selectedIndex, 0, nextNotes);
+      const nextGame = applyMoveToGame(game, selectedIndex, 0, nextNotes);
+      if (nextGame) updateGame(nextGame);
       return;
     }
-    applyMove(selectedIndex, value, '');
+    const nextGame = applyMoveToGame(game, selectedIndex, value, '');
+    if (nextGame) updateGame(nextGame);
   };
 
   const handleErase = () => {
     if (selectedIndex === null || !game) return;
     if (game.entries[selectedIndex] !== 0) {
-      applyMove(selectedIndex, 0, '');
+      const nextGame = applyMoveToGame(game, selectedIndex, 0, '');
+      if (nextGame) updateGame(nextGame);
       return;
     }
     if (game.notes[selectedIndex]) {
-      applyMove(selectedIndex, 0, '');
+      const nextGame = applyMoveToGame(game, selectedIndex, 0, '');
+      if (nextGame) updateGame(nextGame);
     }
   };
 
@@ -284,15 +299,13 @@ export default function GameScreen() {
       return;
 
     const nextValue = game.solution[selectedIndex];
-    applyMove(selectedIndex, nextValue, '');
-    setGame((prev) =>
-      prev
-        ? {
-            ...prev,
-            hintsLeft: Math.max(0, prev.hintsLeft - 1),
-          }
-        : prev
-    );
+    const baseNext = applyMoveToGame(game, selectedIndex, nextValue, '');
+    if (!baseNext) return;
+    const nextGame = {
+      ...baseNext,
+      hintsLeft: Math.max(0, baseNext.hintsLeft - 1),
+    };
+    updateGame(nextGame);
   };
 
   const hintDisabled =
@@ -308,13 +321,14 @@ export default function GameScreen() {
     const notes = game.notes.slice();
     entries[last.index] = last.prevValue;
     notes[last.index] = last.prevNotes;
-    setGame({
+    const nextGame = {
       ...game,
       entries,
       notes,
       undoStack: game.undoStack.slice(0, -1),
       redoStack: [...game.redoStack, last],
-    });
+    };
+    updateGame(nextGame);
   };
 
   const handleRedo = () => {
@@ -324,13 +338,14 @@ export default function GameScreen() {
     const notes = game.notes.slice();
     entries[last.index] = last.nextValue;
     notes[last.index] = last.nextNotes;
-    setGame({
+    const nextGame = {
       ...game,
       entries,
       notes,
       undoStack: [...game.undoStack, last],
       redoStack: game.redoStack.slice(0, -1),
-    });
+    };
+    updateGame(nextGame);
   };
 
   const handleCheck = () => {

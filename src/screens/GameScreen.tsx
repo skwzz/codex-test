@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  AppState,
   Pressable,
   StyleSheet,
   Text,
@@ -83,6 +84,29 @@ export default function GameScreen() {
       game.elapsedSec + Math.floor((Date.now() - sessionStartRef.current) / 1000)
     );
   }, [game, tick]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState.match(/inactive|background/)) {
+        setGame((prev) => {
+          if (!prev || prev.completed) return prev;
+          const now = Date.now();
+          const added = Math.floor((now - sessionStartRef.current) / 1000);
+          sessionStartRef.current = now;
+          return {
+            ...prev,
+            elapsedSec: prev.elapsedSec + added,
+          };
+        });
+      } else if (nextAppState === 'active') {
+        sessionStartRef.current = Date.now();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -196,14 +220,16 @@ export default function GameScreen() {
   };
 
   const handleHint = () => {
-    if (!game || game.hintsLeft <= 0) return;
-    const empties = game.entries
-      .map((value, idx) => (value === 0 ? idx : -1))
-      .filter((idx) => idx !== -1);
-    if (empties.length === 0) return;
-    const pick = empties[Math.floor(Math.random() * empties.length)];
-    const nextValue = game.solution[pick];
-    applyMove(pick, nextValue, '');
+    if (
+      !game ||
+      game.hintsLeft <= 0 ||
+      selectedIndex === null ||
+      game.entries[selectedIndex] !== 0
+    )
+      return;
+
+    const nextValue = game.solution[selectedIndex];
+    applyMove(selectedIndex, nextValue, '');
     setGame((prev) =>
       prev
         ? {
@@ -213,6 +239,12 @@ export default function GameScreen() {
         : prev
     );
   };
+
+  const hintDisabled =
+    !game ||
+    game.hintsLeft <= 0 ||
+    selectedIndex === null ||
+    game.entries[selectedIndex] !== 0;
 
   const handleUndo = () => {
     if (!game || game.undoStack.length === 0) return;
@@ -267,30 +299,33 @@ export default function GameScreen() {
         <Text style={styles.hintText}>Hints {game.hintsLeft}</Text>
       </View>
 
-      <View style={styles.gridWrap}>
-        <SudokuGrid
-          entries={game.entries}
-          given={game.given}
-          notes={game.notes}
-          selectedIndex={selectedIndex}
-          onSelect={setSelectedIndex}
-          errors={errors}
-          cellSize={cellSize}
+      <View style={styles.gameBoard}>
+        <View style={styles.gridWrap}>
+          <SudokuGrid
+            entries={game.entries}
+            given={game.given}
+            notes={game.notes}
+            selectedIndex={selectedIndex}
+            onSelect={setSelectedIndex}
+            errors={errors}
+            cellSize={cellSize}
+          />
+        </View>
+
+        <NumberPad
+          onNumber={handleNumber}
+          onErase={handleErase}
+          onToggleNotes={() => setNoteMode((v) => !v)}
+          onHint={handleHint}
+          hintsLeft={game.hintsLeft}
+          hintDisabled={hintDisabled}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          noteMode={noteMode}
+          undoDisabled={game.undoStack.length === 0}
+          redoDisabled={game.redoStack.length === 0}
         />
       </View>
-
-      <NumberPad
-        onNumber={handleNumber}
-        onErase={handleErase}
-        onToggleNotes={() => setNoteMode((v) => !v)}
-        onHint={handleHint}
-        hintsLeft={game.hintsLeft}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        noteMode={noteMode}
-        undoDisabled={game.undoStack.length === 0}
-        redoDisabled={game.redoStack.length === 0}
-      />
 
       {showComplete && (
         <View style={styles.overlay}>
@@ -319,8 +354,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f3efe9',
-    padding: 16,
-    gap: 16,
+    paddingHorizontal: 16,
+    paddingTop: 48,
+    paddingBottom: 24,
+  },
+  gameBoard: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 32,
   },
   loadingText: {
     color: '#1f2a44',

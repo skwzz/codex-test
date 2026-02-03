@@ -82,9 +82,23 @@ export default function SudokuGrid({
                     {value}
                   </Text>
                 ) : notes[idx] ? (
-                  <Text style={[styles.cellNotes, { fontSize: noteFont }]}>
-                    {notes[idx]}
-                  </Text>
+                  <View style={styles.notesGrid}>
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+                      <View key={n} style={styles.noteCell}>
+                        <Text
+                          style={[
+                            styles.noteText,
+                            {
+                              fontSize: cellSize / 3.5,
+                              opacity: notes[idx].includes(n.toString()) ? 1 : 0,
+                            },
+                          ]}
+                        >
+                          {n}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
                 ) : null}
               </Pressable>
             );
@@ -149,9 +163,20 @@ const styles = StyleSheet.create({
   cellTextError: {
     color: '#c62828',
   },
-  cellNotes: {
+  notesGrid: {
+    width: '100%',
+    height: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  noteCell: {
+    width: '33.33%',
+    height: '33.33%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noteText: {
     color: '#6b6b6b',
-    textAlign: 'center',
-    letterSpacing: 1,
+    fontWeight: '500',
   },
 });

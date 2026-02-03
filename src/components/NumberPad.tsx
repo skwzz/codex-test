@@ -6,6 +6,7 @@ type Props = {
   onToggleNotes: () => void;
   onHint: () => void;
   hintsLeft: number;
+  hintDisabled: boolean;
   onUndo: () => void;
   onRedo: () => void;
   noteMode: boolean;
@@ -21,6 +22,7 @@ export default function NumberPad({
   onToggleNotes,
   onHint,
   hintsLeft,
+  hintDisabled,
   onUndo,
   onRedo,
   noteMode,
@@ -50,7 +52,11 @@ export default function NumberPad({
         <Pressable onPress={onErase} style={styles.actionButton}>
           <Text style={styles.actionText}>Erase</Text>
         </Pressable>
-        <Pressable onPress={onHint} style={styles.actionButton}>
+        <Pressable
+          onPress={onHint}
+          style={[styles.actionButton, hintDisabled && styles.actionButtonDisabled]}
+          disabled={hintDisabled}
+        >
           <Text style={styles.actionText}>Hint ({hintsLeft})</Text>
         </Pressable>
         <Pressable
@@ -74,7 +80,7 @@ export default function NumberPad({
 
 const styles = StyleSheet.create({
   wrapper: {
-    gap: 12,
+    gap: 8,
   },
   numberRow: {
     flexDirection: 'row',
@@ -84,7 +90,7 @@ const styles = StyleSheet.create({
   },
   numberButton: {
     width: '30%',
-    aspectRatio: 1.6,
+    aspectRatio: 1.8,
     backgroundColor: '#1f2a44',
     borderRadius: 10,
     alignItems: 'center',
@@ -100,14 +106,15 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
     justifyContent: 'space-between',
+    marginTop: 4,
   },
   actionButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    width: '30%',
+    aspectRatio: 2.2,
     backgroundColor: '#ece7e1',
     borderRadius: 10,
-    minWidth: '30%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   actionButtonActive: {
     backgroundColor: '#ffe6a7',
